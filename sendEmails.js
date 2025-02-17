@@ -4,8 +4,8 @@ const fs = require("fs");
 const csv = require("csv-parser");
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.hostinger.com', 
-  port: 465,                   
+  host: 'smtp.hostinger.com',
+  port: 465,
   secure: true, // True for 465, false for 587
   auth: {
     user: process.env.EMAIL_USER,
@@ -14,13 +14,19 @@ const transporter = nodemailer.createTransport({
 });
 
 // Read the CSV file and send emails
-fs.createReadStream("book1.csv") 
+fs.createReadStream("book1.csv")
   .pipe(csv())
   .on("data", (row) => {
+    if (!row.email || !row.filename) {
+      console.warn(`⚠️ Skipping row due to missing email or filename:`, row);
+      return;
+    }
+
     const email = row.email;
     const filename = row.filename;
-    const attachmentPath = `certificates/${filename}`;
-    console.log("Raw Row:", row);
+    // const attachmentPath = `certificates/${filename}`;
+
+    console.log(`📩 Processing email: ${email}, File: ${filename}`);
 
     // HTML Email Template
     const htmlContent = `
