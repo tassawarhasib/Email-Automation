@@ -21,7 +21,7 @@ fs.createReadStream("book1.csv")
       console.warn(`⚠️ Skipping row due to missing email or filename:`, row);
       return;
     }
-
+    
     const email = row.email;
     const filename = row.filename;
     // const attachmentPath = `certificates/${filename}`;
@@ -34,14 +34,14 @@ fs.createReadStream("book1.csv")
       <tbody>
         <tr>
           <td style="background-color: #00224f; color: #fff; text-align: center; padding: 20px;">
-            <h1 style="margin: 0; font-size: 24px;">Mastering Root Cause Analysis (RCA) for Effective Failure Management Certificate</h1>
+            <h1 style="margin: 0; font-size: 24px;">Material Selection and Failure Analysis Certificate</h1>
           </td>
         </tr>
         <tr>
           <td style="padding: 20px; line-height: 1.6;">
-            <p>Dear Attendee,</p>
+            <p>Dear ${row.name || 'Attendee'},</p>
             <p>Greetings from Excellence Integrity Management!</p>
-            <p>We are pleased to inform you that your certificate for the <strong>Mastering Root Cause Analysis (RCA) for Effective Failure Management Training</strong> is now ready. Please find your certificate attached to this email in PDF format.</p>
+            <p>We are pleased to inform you that your certificate for the <strong>Material Selection and Failure Analysis for Oil & Gas Applications Training</strong> is now ready. Please find your certificate attached to this email in PDF format.</p>
             <p>Thank you for your active participation and engagement during the training sessions. We hope the knowledge and skills you gained will be a valuable asset in your professional endeavors.</p>
             <p>If you have any questions or need further assistance, feel free to contact us at <a href="mailto:info@excellenceintegrity.com">info@excellenceintegrity.com</a> or via WhatsApp at <strong>+971 56 130 8750</strong>.</p>
             <p>Visit our website for more - <a href="https://excellenceintegrity.com/" target="_blank">www.excellenceintegrity.com</a></p>
@@ -83,7 +83,7 @@ fs.createReadStream("book1.csv")
     const mailOptions = {
       from: '"Excellence Integrity Management" "nilanjansen@excellenceintegrity.com"',
       to: row.email,
-      subject: "Your Root Cause Analysis (RCA) Certificate from Excellence Integrity Management",
+      subject: "Your Material Selection and Failure Analysis Certificate from Excellence Integrity Management",
       // text: `Dear Participant,\n\nAttached is your certificate.\n\nBest regards,\n[Your Name]`,
       html: htmlContent,
       attachments: [
