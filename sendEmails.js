@@ -13,18 +13,25 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Function to extract and capitalize the name
+const getFirstName = (name) => {
+  if (!name) return 'Attendee';
+  const firstName = name.trim().split(' ')[0];
+  return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+};
+
 // Read the CSV file and send emails
-fs.createReadStream("book1.csv")
+fs.createReadStream("material-selection-february.csv")
   .pipe(csv())
   .on("data", (row) => {
     if (!row.email || !row.filename) {
       console.warn(`⚠️ Skipping row due to missing email or filename:`, row);
       return;
     }
-    
+
     const email = row.email;
     const filename = row.filename;
-    // const attachmentPath = `certificates/${filename}`;
+    const firstName = getFirstName(row.name);
 
     console.log(`📩 Processing email: ${email}, File: ${filename}`);
 
@@ -39,7 +46,7 @@ fs.createReadStream("book1.csv")
         </tr>
         <tr>
           <td style="padding: 20px; line-height: 1.6;">
-            <p>Dear ${row.name || 'Attendee'},</p>
+            <p>Dear ${firstName},</p>
             <p>Greetings from Excellence Integrity Management!</p>
             <p>We are pleased to inform you that your certificate for the <strong>Material Selection and Failure Analysis for Oil & Gas Applications Training</strong> is now ready. Please find your certificate attached to this email in PDF format.</p>
             <p>Thank you for your active participation and engagement during the training sessions. We hope the knowledge and skills you gained will be a valuable asset in your professional endeavors.</p>
@@ -89,7 +96,7 @@ fs.createReadStream("book1.csv")
       attachments: [
         {
           filename: row.filename,
-          path: `./certificates/${row.filename}`
+          path: `./material-certificate/${row.filename}`
         },
       ],
     };
