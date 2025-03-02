@@ -2,53 +2,63 @@ require("dotenv").config();
 const nodemailer = require("nodemailer");
 const fs = require("fs");
 const csv = require("csv-parser");
+const readline = require("readline");
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.hostinger.com',
-  port: 465,
-  secure: true, // True for 465, false for 587
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
 });
 
-// Function to extract and capitalize the name
-const getFirstName = (name) => {
-  if (!name) return 'Attendee';
-  const firstName = name.trim().split(' ')[0];
-  return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
-};
+rl.question("Enter the Training Name: ", (trainingName) => {
+  rl.close(); // Close input stream after getting the name
 
-// Read the CSV file and send emails
-fs.createReadStream("material-selection-february.csv")
-  .pipe(csv())
-  .on("data", (row) => {
-    if (!row.email || !row.filename) {
-      console.warn(`⚠️ Skipping row due to missing email or filename:`, row);
-      return;
-    }
 
-    const email = row.email;
-    const filename = row.filename;
-    const firstName = getFirstName(row.name);
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.hostinger.com',
+    port: 465,
+    secure: true, // True for 465, false for 587
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    },
+  });
 
-    console.log(`📩 Processing email: ${email}, File: ${filename}`);
+  // Function to extract and capitalize the name
+  const getFirstName = (name) => {
+    if (!name) return 'Attendee';
+    const firstName = name.trim().split(' ')[0];
+    return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+  };
 
-    // HTML Email Template
-    const htmlContent = `
+  // Read the CSV file and send emails
+  fs.createReadStream("emails.csv")
+    .pipe(csv())
+    .on("data", (row) => {
+      if (!row.email || !row.filename) {
+        console.warn(`⚠️ Skipping row due to missing email or filename:`, row);
+        return;
+      }
+
+      const email = row.email;
+      const filename = row.filename;
+      const firstName = getFirstName(row.name);
+
+      console.log(`📩 Processing email: ${email}, File: ${filename}`);
+
+      // HTML Email Template
+      const htmlContent = `
     <table style="margin: 20px auto; background-color: #fff; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;" width="600" cellspacing="0" cellpadding="0" align="center">
       <tbody>
         <tr>
           <td style="background-color: #00224f; color: #fff; text-align: center; padding: 20px;">
-            <h1 style="margin: 0; font-size: 24px;">Material Selection and Failure Analysis Certificate</h1>
+            <h1 style="margin: 0; font-size: 24px;">${trainingName} Certificate</h1>
           </td>
         </tr>
         <tr>
           <td style="padding: 20px; line-height: 1.6;">
             <p>Dear ${firstName},</p>
             <p>Greetings from Excellence Integrity Management!</p>
-            <p>We are pleased to inform you that your certificate for the <strong>Material Selection and Failure Analysis for Oil & Gas Applications Training</strong> is now ready. Please find your certificate attached to this email in PDF format.</p>
+            <p>We are pleased to inform you that your certificate for the <strong>${trainingName} Training</strong> is now ready. Please find your certificate attached to this email in PDF format.</p>
             <p>Thank you for your active participation and engagement during the training sessions. We hope the knowledge and skills you gained will be a valuable asset in your professional endeavors.</p>
             <p>If you have any questions or need further assistance, feel free to contact us at <a href="mailto:info@excellenceintegrity.com">info@excellenceintegrity.com</a> or via WhatsApp at <strong>+971 56 130 8750</strong>.</p>
             <p>Visit our website for more - <a href="https://excellenceintegrity.com/" target="_blank">www.excellenceintegrity.com</a></p>
@@ -86,30 +96,32 @@ fs.createReadStream("material-selection-february.csv")
   `;
 
 
-    // Email Options
-    const mailOptions = {
-      from: '"Excellence Integrity Management" "nilanjansen@excellenceintegrity.com"',
-      to: row.email,
-      subject: "Your Material Selection and Failure Analysis Certificate from Excellence Integrity Management",
-      // text: `Dear Participant,\n\nAttached is your certificate.\n\nBest regards,\n[Your Name]`,
-      html: htmlContent,
-      attachments: [
-        {
-          filename: row.filename,
-          path: `./material-certificate/${row.filename}`
-        },
-      ],
-    };
+      // Email Options
+      const mailOptions = {
+        from: '"Excellence Integrity Management" "nilanjansen@excellenceintegrity.com"',
+        to: row.email,
+        subject: `Your ${trainingName} Certificate from Excellence Integrity Management`,
+        // text: `Dear Participant,\n\nAttached is your certificate.\n\nBest regards,\n[Your Name]`,
+        html: htmlContent,
+        attachments: [
+          {
+            filename: row.filename,
+            path: `./certificate-folder/${row.filename}`
+          },
+        ],
+      };
 
-    // Send Email
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error(`❌ Error sending to ${email}:`, error);
-      } else {
-        console.log(`✅ Email sent to ${email}:`, info.response);
-      }
+      // Send Email
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error(`❌ Error sending to ${email}:`, error);
+        } else {
+          console.log(`✅ Email sent to ${email}:`, info.response);
+        }
+      });
+    })
+    .on("end", () => {
+      console.log("🎉 All emails sent successfully!");
     });
-  })
-  .on("end", () => {
-    console.log("🎉 All emails sent successfully!");
-  });
+
+});
